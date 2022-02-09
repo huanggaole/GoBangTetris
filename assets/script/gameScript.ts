@@ -98,6 +98,7 @@ export default class NewClass extends cc.Component {
     speed = 0.5;
     blockIndex = 0;
     score = 0;
+    times = 0;
     start () {
         // 初始化棋盘
         for(let i = 0; i < this.mapheight; i++){
@@ -277,6 +278,7 @@ export default class NewClass extends cc.Component {
             }
         }
         // 判断是否可消除
+        this.times = 0;
         const ifEliminated = this.Eliminated();
         // if(!ifEliminated){
         //    this.nextRound();
@@ -398,7 +400,7 @@ export default class NewClass extends cc.Component {
             }
         }
         // 增加分数
-        let times = eliSets.length;
+        this.times += eliSets.length;
         let pieceNum = 0;
         if(eliSets.length == 0){
             this.nextRound();
@@ -414,10 +416,10 @@ export default class NewClass extends cc.Component {
                 flagForEliminated[set[j].y][set[j].x] = true;
             }
         }
-        if(eliSets.length == 1){
+        if(this.times == 1){
             this.comboLabel.string = "    + " + pieceNum;
         }else{
-            this.comboLabel.string = "    + " + eliSets.length + " * " + pieceNum + "\nCombo * " + eliSets.length;
+            this.comboLabel.string = "    + " + this.times + " * " + pieceNum + "\nCombo * " + this.times;
         }
         
         this.unregisteButtons();
@@ -499,10 +501,10 @@ export default class NewClass extends cc.Component {
                                                     }
                                                 }
                                                 this.comboLabel.node.active = false;
-                                                this.score += pieceNum * times;
+                                                this.score += pieceNum * this.times;
                                                 this.scoreLabel.string = "Score: " + this.score;
-                                                this.nextRound();
-                                                // this.hangPiecesFall();
+                                                // this.nextRound();
+                                                this.hangPiecesFall();
                                             },0.05);
                                         },0.05);
                                     },0.05);
@@ -552,53 +554,95 @@ export default class NewClass extends cc.Component {
                 }
             }
         }
-        const hanglist = [];
-        for(let i = 1; i < this.mapheight; i++){
-            for(let j = 0; j < this.mapwidth; j++){
-                if(hangFlags[i][j] == 1){
-                    this.map[i - 1][j] = this.map[i][j];
-                    this.mapPieces[i - 1][j] = this.mapPieces[i][j];
-                    this.map[i][j] = 0;
-                    this.mapPieces[i][j] = null;
-                    const node = this.mapPieces[i - 1][j];
-                    hanglist.push(new cc.Vec2(j, i - 1));
+        // 将剩下的连通分量从3开始编号
+        let adjIndex = 2;
+        const breakenBlocks = [];
+        while(true){
+            const block = [];
+            let ifHasHangingPieces = false;
+            let visitedlist = [];
+            visitedindex = 0;
+            // 遍历所有的棋子
+            for(let i = 0; i < this.mapheight; i++){
+                for(let j = 0; j < this.mapwidth; j++){
+                    if(hangFlags[i][j] == 1){
+                        adjIndex++;
+                        hangFlags[i][j] = adjIndex;
+                        block.push(new cc.Vec2(j, i));
+                        visitedlist.push(new cc.Vec2(j, i));
+                        ifHasHangingPieces = true;
+                        break;
+                    }
+                }
+                if(ifHasHangingPieces){
+                    break;
+                }
+            }
+            if(ifHasHangingPieces == false){
+                break;
+            }
+            while(visitedindex < visitedlist.length){
+                let P = visitedlist[visitedindex];
+                visitedindex++;
+                for(let i = 0; i < 4; i++){
+                    const newP = new cc.Vec2(P.x + delx[i],P.y + dely[i]);
+                    if(newP.x >= 0 && newP.y >= 0 && newP.x < this.mapwidth && newP.y < this.mapheight && hangFlags[newP.y][newP.x] == 1){
+                        hangFlags[newP.y][newP.x] = adjIndex;
+                        visitedlist.push(newP);
+                        block.push(newP);
+                    }
+                }
+            }
+            breakenBlocks.push(block);
+        }
+        this.continueFall(breakenBlocks, hangFlags);
+    }
+
+    continueFall(breakenBlocks, hangFlags){
+        let ifAnyFall = false;
+        for(let i = 0; i < breakenBlocks.length; i++){
+            const block = breakenBlocks[i];
+            const adjIndex = i + 3;
+            let ifCanfall = true;
+            for(let j = 0; j < block.length; j++){
+                const pos = block[j];
+                if(pos.y == 0 || (hangFlags[pos.y - 1][pos.x] != adjIndex && hangFlags[pos.y - 1][pos.x] != 0)){
+                    ifCanfall = false;
+                    break;
+                }
+            }
+            if(ifCanfall){
+                ifAnyFall = true;
+                const newMap = [];
+                const newPieces = [];
+                for(let j = 0; j < block.length; j++){
+                    const pos = block[j];
+                    newMap.push(this.map[pos.y][pos.x]);
+                    this.map[pos.y][pos.x] = 0;
+                    hangFlags[pos.y][pos.x] = 0;
+                    newPieces.push(this.mapPieces[pos.y][pos.x]);
+                    this.mapPieces[pos.y][pos.x] = null;
+                    block[j].y -= 1;
+                }
+                for(let j = 0; j < block.length; j++){
+                    const pos = block[j];
+                    this.map[pos.y][pos.x] = newMap[j];
+                    hangFlags[pos.y][pos.x] = adjIndex;
+                    this.mapPieces[pos.y][pos.x] = newPieces[j];
+                    const node = this.mapPieces[pos.y][pos.x];
                     cc.tween(node).to(0.2,{
-                        x: j * 8 - 36,
-                        y: i * 8 - 96
+                        x: pos.x * 8 - 36,
+                        y: pos.y * 8 - 88
                     })
                     .start();
-                    this.scheduleOnce(()=>{this.continueFall(hanglist);},0.4);
                 }
             }
         }
-        
-    }
-
-    continueFall(hanglist){
-        const newhanglist = [];
-        for(let i = 0; i < hanglist.length; i++){
-            let pos = hanglist[i];
-            if(pos.y > 0 && this.mapPieces[pos.y - 1][pos.x] == null){
-                this.map[pos.y - 1][pos.x] = this.map[pos.y][pos.x];
-                this.mapPieces[pos.y - 1][pos.x] = this.mapPieces[pos.y][pos.x];
-                this.map[pos.y][pos.x] = 0;
-                this.mapPieces[pos.y][pos.x] = null;
-                const node = this.mapPieces[pos.y - 1][pos.x];
-                newhanglist.push(new cc.Vec2(pos.x,pos.y - 1));
-                cc.tween(node).to(0.2,{
-                    x: pos.x * 8 - 36,
-                    y: pos.y * 8 - 96
-                })
-                .start();
-                this.scheduleOnce(()=>{this.continueFall(newhanglist);},0.4);
-            }
+        if(ifAnyFall){
+            this.scheduleOnce(()=>{this.continueFall(breakenBlocks, hangFlags);},0.4);
+        }else{
+            this.Eliminated();
         }
-
-        if(newhanglist.length != 0){
-            return;
-        }
-        // 判断是否可消除
-        this.Eliminated();
     }
 
     movePieces(pos:cc.Vec2){
