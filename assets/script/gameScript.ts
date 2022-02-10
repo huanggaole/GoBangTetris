@@ -43,6 +43,9 @@ export default class NewClass extends cc.Component {
     @property(cc.Label)
     levelLabel: cc.Label = null;
 
+    @property(cc.Button)
+    endBtn: cc.Button = null;
+
     @property([cc.SpriteFrame])
     exs = [];
 
@@ -119,6 +122,7 @@ export default class NewClass extends cc.Component {
         // 每隔 speed 毫秒方块下降一格
         this.scheduleOnce(()=>{this.onMove();},this.speed);
         this.registeButtons();
+        this.endBtn.node.on("click",()=>{cc.director.loadScene("GameScene");},this);
     }
 
     registeButtons(){
@@ -304,6 +308,7 @@ export default class NewClass extends cc.Component {
         if(ifCollape){
             // 游戏结束
             this.unregisteButtons();
+            this.endBtn.node.active = true;
         }else{
             this.scheduleOnce(()=>{this.onMove()},this.speed * 2);
             this.registeButtons();
