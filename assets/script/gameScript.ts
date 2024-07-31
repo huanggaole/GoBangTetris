@@ -49,6 +49,24 @@ export default class NewClass extends cc.Component {
     @property([cc.SpriteFrame])
     exs = [];
 
+    @property(cc.Button)
+    musicBtn: cc.Button = null;
+
+    @property(cc.Sprite)
+    musicSprite: cc.Sprite = null;
+
+    @property(cc.Sprite)
+    museSprite:cc.Sprite = null;
+
+    @property(cc.AudioSource)
+    bgm: cc.AudioSource = null;
+
+    @property(cc.AudioClip)
+    eliminateClip: cc.AudioClip = null;
+
+    @property(cc.AudioClip)
+    collapeClip: cc.AudioClip = null;
+
     blocks = [
         [
             [0,1,0,0],
@@ -131,6 +149,8 @@ export default class NewClass extends cc.Component {
         this.leftBtn.node.on("click", this.onLeft, this);
         this.rightBtn.node.on("click", this.onRight, this);
         cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+
+        this.musicBtn.node.on("click", this.onMusic, this);
     }
 
     unregisteButtons(){
@@ -139,6 +159,22 @@ export default class NewClass extends cc.Component {
         this.leftBtn.node.off("click", this.onLeft, this);
         this.rightBtn.node.off("click", this.onRight, this);
         cc.systemEvent.off(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+
+        this.musicBtn.node.off("click", this.onMusic, this);
+    }
+
+    onMusic(){
+        if(this.bgm.mute){
+            cc.audioEngine.setEffectsVolume(1);
+            this.bgm.mute = false;
+            this.musicSprite.node.active = true;
+            this.museSprite.node.active = false;
+        }else{
+            cc.audioEngine.setEffectsVolume(0);
+            this.bgm.mute = true;
+            this.musicSprite.node.active = false;
+            this.museSprite.node.active = true;
+        }
     }
 
     onKeyDown(event) {
@@ -430,6 +466,7 @@ export default class NewClass extends cc.Component {
         this.unregisteButtons();
         // 棋子闪烁两下
         this.scheduleOnce(()=>{
+            cc.audioEngine.playEffect(this.eliminateClip, false);
             for(let i = 0; i < eliSets.length; i++){
                 const set = eliSets[i];
                 for(let j = 0; j < set.length; j++){
@@ -674,9 +711,13 @@ export default class NewClass extends cc.Component {
                     const newy = pos.y - i;
                     // console.log(newx, newy);
                     if(newx < 0 || newx >= this.mapwidth || newy < 0 || newy > this.mapheight){
+                        // 播放落棋子的声音
+                        cc.audioEngine.playEffect(this.collapeClip, false);
                         return true;
                     }
                     if(this.map[newy][newx]!=0){
+                        // 播放落棋子的声音
+                        cc.audioEngine.playEffect(this.collapeClip, false);
                         return true;
                     }
                 }
