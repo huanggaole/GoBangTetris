@@ -496,8 +496,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 50,
-      "height": 50.4
+      "width": 40,
+      "height": 37.8
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -509,7 +509,7 @@
       "ctor": "Float64Array",
       "array": [
         0,
-        10.286,
+        6.101,
         0,
         0,
         0,
@@ -548,15 +548,13 @@
     ],
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_string": "start",
-    "_N$string": "start",
-    "_fontSize": 40,
-    "_lineHeight": 40,
+    "_string": "开始",
+    "_N$string": "开始",
+    "_fontSize": 20,
+    "_lineHeight": 30,
     "_enableWrapText": true,
-    "_N$file": {
-      "__uuid__": "04ab28bd-ac1a-40f5-abc6-4849dc6fdd46"
-    },
-    "_isSystemFontUsed": false,
+    "_N$file": null,
+    "_isSystemFontUsed": true,
     "_spacingX": 0,
     "_batchAsBitmap": false,
     "_styleFlags": 0,
@@ -734,20 +732,20 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 290.63,
-      "height": 370.4
+      "width": 330.24,
+      "height": 610.4
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
-      "x": 0.5,
+      "x": 0,
       "y": 0.5
     },
     "_trs": {
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        -310.967,
-        110.71,
+        -478.38,
+        4.682,
         0,
         0,
         0,
@@ -786,15 +784,13 @@
     ],
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_string": "GoBangTetris\n\nFive or more white/black pieces in \na row, column or diagonal will be \neliminated. Each piece eliminated\ncontributes one score for you.\n\nThe nth Combo makes n times \nscore.",
-    "_N$string": "GoBangTetris\n\nFive or more white/black pieces in \na row, column or diagonal will be \neliminated. Each piece eliminated\ncontributes one score for you.\n\nThe nth Combo makes n times \nscore.",
-    "_fontSize": 30,
+    "_string": "五子棋俄罗斯方块\n\n当五个或更多的相同颜色的棋子在\n一行、列或45°斜线上时，会被消除。\n零碎的悬浮棋子会随之落下。\n\n每消除一个棋子，获得一分。\n如果一次下落中触发了多次消除，\n则第n次消除的棋子获得n倍得分。\n\n每掉落20个方块，关卡会升1级。\n随着关卡的升级，\n方块掉落速度会逐渐加快。\n\n尽量取得更多分数吧~",
+    "_N$string": "五子棋俄罗斯方块\n\n当五个或更多的相同颜色的棋子在\n一行、列或45°斜线上时，会被消除。\n零碎的悬浮棋子会随之落下。\n\n每消除一个棋子，获得一分。\n如果一次下落中触发了多次消除，\n则第n次消除的棋子获得n倍得分。\n\n每掉落20个方块，关卡会升1级。\n随着关卡的升级，\n方块掉落速度会逐渐加快。\n\n尽量取得更多分数吧~",
+    "_fontSize": 20,
     "_lineHeight": 40,
     "_enableWrapText": true,
-    "_N$file": {
-      "__uuid__": "04ab28bd-ac1a-40f5-abc6-4849dc6fdd46"
-    },
-    "_isSystemFontUsed": false,
+    "_N$file": null,
+    "_isSystemFontUsed": true,
     "_spacingX": 0,
     "_batchAsBitmap": false,
     "_styleFlags": 0,
@@ -831,7 +827,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 221.25,
+      "width": 224.84,
       "height": 90.4
     },
     "_anchorPoint": {
@@ -883,15 +879,13 @@
     ],
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_string": "Made by: @Huang Gaole\nArt from: @IKnowKingRabbit",
-    "_N$string": "Made by: @Huang Gaole\nArt from: @IKnowKingRabbit",
-    "_fontSize": 30,
+    "_string": "制作: @Huang Gaole\n美术: @IKnowKingRabbit",
+    "_N$string": "制作: @Huang Gaole\n美术: @IKnowKingRabbit",
+    "_fontSize": 20,
     "_lineHeight": 40,
     "_enableWrapText": true,
-    "_N$file": {
-      "__uuid__": "04ab28bd-ac1a-40f5-abc6-4849dc6fdd46"
-    },
-    "_isSystemFontUsed": false,
+    "_N$file": null,
+    "_isSystemFontUsed": true,
     "_spacingX": 0,
     "_batchAsBitmap": false,
     "_styleFlags": 0,

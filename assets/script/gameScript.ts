@@ -507,7 +507,7 @@ export default class NewClass extends cc.Component {
                                                 }
                                                 this.comboLabel.node.active = false;
                                                 this.score += pieceNum * this.times;
-                                                this.scoreLabel.string = "Score: " + this.score;
+                                                this.scoreLabel.string = "分数: " + this.score;
                                                 // this.nextRound();
                                                 this.hangPiecesFall();
                                             },0.05);
@@ -710,7 +710,7 @@ export default class NewClass extends cc.Component {
     refreshNext(block:[[]]){
         this.blockIndex++;
         this.levelnum = 1 + Math.floor(this.blockIndex / 20);
-        this.levelLabel.string = "Level " + this.levelnum;
+        this.levelLabel.string = "关卡 " + this.levelnum;
         this.speed = 0.5 * Math.pow(0.9,(this.levelnum - 1));
         this.nextSprite.node.removeAllChildren();
         for(let i = 0; i < block.length; i++){
