@@ -827,8 +827,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 224.84,
-      "height": 90.4
+      "width": 280,
+      "height": 330.4
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -839,8 +839,8 @@
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        289.526,
-        -233.759,
+        309.024,
+        -1.835,
         0,
         0,
         0,
@@ -879,8 +879,8 @@
     ],
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_string": "制作: @Huang Gaole\n美术: @IKnowKingRabbit",
-    "_N$string": "制作: @Huang Gaole\n美术: @IKnowKingRabbit",
+    "_string": "              健康游戏忠告\n抵制不良游戏，拒绝盗版游戏。\n注意自我保护，谨防受骗上当。\n适度游戏益脑，沉迷游戏伤身。\n合理安排时间，享受健康生活。\n\n制作: 黄高乐\n美术: Aleksandr Makarov",
+    "_N$string": "              健康游戏忠告\n抵制不良游戏，拒绝盗版游戏。\n注意自我保护，谨防受骗上当。\n适度游戏益脑，沉迷游戏伤身。\n合理安排时间，享受健康生活。\n\n制作: 黄高乐\n美术: Aleksandr Makarov",
     "_fontSize": 20,
     "_lineHeight": 40,
     "_enableWrapText": true,
