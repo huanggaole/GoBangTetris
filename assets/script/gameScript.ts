@@ -5,7 +5,10 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-const {ccclass, property} = cc._decorator;
+// 微信小游戏API类型声明
+declare var wx: any;
+
+const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class NewClass extends cc.Component {
@@ -56,7 +59,7 @@ export default class NewClass extends cc.Component {
     musicSprite: cc.Sprite = null;
 
     @property(cc.Sprite)
-    museSprite:cc.Sprite = null;
+    museSprite: cc.Sprite = null;
 
     @property(cc.AudioSource)
     bgm: cc.AudioSource = null;
@@ -67,41 +70,44 @@ export default class NewClass extends cc.Component {
     @property(cc.AudioClip)
     collapeClip: cc.AudioClip = null;
 
+    // 微信开放数据域相关
+    private _openContext: any; // 子域对象
+
     blocks = [
         [
-            [0,1,0,0],
-            [0,1,0,0],
-            [0,1,0,0],
-            [0,1,0,0]
+            [0, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 1, 0, 0]
         ],
         [
-            [1,1],
-            [1,1]
+            [1, 1],
+            [1, 1]
         ],
         [
-            [1,0,0],
-            [1,1,0],
-            [0,1,0]
+            [1, 0, 0],
+            [1, 1, 0],
+            [0, 1, 0]
         ],
         [
-            [0,1,0],
-            [1,1,0],
-            [1,0,0]
+            [0, 1, 0],
+            [1, 1, 0],
+            [1, 0, 0]
         ],
         [
-            [1,0,0],
-            [1,0,0],
-            [1,1,0]
+            [1, 0, 0],
+            [1, 0, 0],
+            [1, 1, 0]
         ],
         [
-            [0,1,0],
-            [0,1,0],
-            [1,1,0]
+            [0, 1, 0],
+            [0, 1, 0],
+            [1, 1, 0]
         ],
         [
-            [0,1,0],
-            [1,1,1],
-            [0,0,0]
+            [0, 1, 0],
+            [1, 1, 1],
+            [0, 0, 0]
         ]
     ];
     // LIFE-CYCLE CALLBACKS:
@@ -110,7 +116,7 @@ export default class NewClass extends cc.Component {
     next = null;
     current = null;
     currentpieces = [];
-    pos:cc.Vec2 = null;
+    pos: cc.Vec2 = null;
     mapwidth = 10;
     mapheight = 23;
     map = [];
@@ -120,12 +126,15 @@ export default class NewClass extends cc.Component {
     blockIndex = 0;
     score = 0;
     times = 0;
-    start () {
+    start() {
+        // 初始化微信开放数据域
+        this.initOpenContext();
+
         // 初始化棋盘
-        for(let i = 0; i < this.mapheight; i++){
+        for (let i = 0; i < this.mapheight; i++) {
             const line = [];
             const pline = [];
-            for(let j = 0; j < this.mapwidth; j++){
+            for (let j = 0; j < this.mapwidth; j++) {
                 line.push(0);
                 pline.push(null);
             }
@@ -135,15 +144,15 @@ export default class NewClass extends cc.Component {
         this.current = this.generateABlock();
         this.next = this.generateABlock();
         this.refreshNext(this.next);
-        this.pos = new cc.Vec2(4,this.mapheight - 1);
-        this.addNewBlock(this.current,this.pos);
+        this.pos = new cc.Vec2(4, this.mapheight - 1);
+        this.addNewBlock(this.current, this.pos);
         // 每隔 speed 毫秒方块下降一格
-        this.scheduleOnce(()=>{this.onMove();},this.speed);
+        this.scheduleOnce(() => { this.onMove(); }, this.speed);
         this.registeButtons();
-        this.endBtn.node.on("click",()=>{cc.director.loadScene("GameScene");},this);
+        this.endBtn.node.on("click", () => { cc.director.loadScene("GameScene"); }, this);
     }
 
-    registeButtons(){
+    registeButtons() {
         this.upBtn.node.on("click", this.onUp, this);
         this.downBtn.node.on("click", this.onDown, this);
         this.leftBtn.node.on("click", this.onLeft, this);
@@ -153,7 +162,7 @@ export default class NewClass extends cc.Component {
         this.musicBtn.node.on("click", this.onMusic, this);
     }
 
-    unregisteButtons(){
+    unregisteButtons() {
         this.upBtn.node.off("click", this.onUp, this);
         this.downBtn.node.off("click", this.onDown, this);
         this.leftBtn.node.off("click", this.onLeft, this);
@@ -163,13 +172,13 @@ export default class NewClass extends cc.Component {
         this.musicBtn.node.off("click", this.onMusic, this);
     }
 
-    onMusic(){
-        if(this.bgm.mute){
+    onMusic() {
+        if (this.bgm.mute) {
             cc.audioEngine.setEffectsVolume(1);
             this.bgm.mute = false;
             this.musicSprite.node.active = true;
             this.museSprite.node.active = false;
-        }else{
+        } else {
             cc.audioEngine.setEffectsVolume(0);
             this.bgm.mute = true;
             this.musicSprite.node.active = false;
@@ -179,8 +188,8 @@ export default class NewClass extends cc.Component {
 
     onKeyDown(event) {
         console.log(event);
-        
-        switch(event.keyCode){
+
+        switch (event.keyCode) {
             // W87 A65 S83 D68
             case 87:
                 this.onUp();
@@ -207,39 +216,39 @@ export default class NewClass extends cc.Component {
                 this.onRight();
                 break;
         }
-        
+
     }
 
-    onDown(){
+    onDown() {
         cc.Tween.stopAll();
         this.unscheduleAllCallbacks();
-        while(true){
+        while (true) {
             // 更新位置
             const newPos = new cc.Vec2(this.pos.x, this.pos.y - 1);
             // 判断是否到底
             const ifCollape = this.ifCollape(newPos);
-            if(ifCollape){
+            if (ifCollape) {
                 this.endRound(this.pos);
                 break;
-            }else{
+            } else {
                 this.pos = newPos;
             }
         }
     }
 
-    onUp(){
+    onUp() {
         const oldCurrent = [];
-        for(let i = 0; i < this.current.length; i++){
+        for (let i = 0; i < this.current.length; i++) {
             const line = [];
-            for(let j = 0; j < this.current[0].length; j++){
+            for (let j = 0; j < this.current[0].length; j++) {
                 const value = this.current[i][j];
                 line.push(value);
             }
             oldCurrent.push(line);
         }
         const n = this.current.length;
-        for(let i=1; i<=n/2; i++){
-            for(let j=i; j<n-i+1; j++){
+        for (let i = 1; i <= n / 2; i++) {
+            for (let j = i; j < n - i + 1; j++) {
                 let t = this.current[i - 1][j - 1];
                 this.current[i - 1][j - 1] = this.current[n - j][i - 1];
                 this.current[n - j][i - 1] = this.current[n - i][n - j];
@@ -249,11 +258,11 @@ export default class NewClass extends cc.Component {
         }
         // 判断是否到底
         const ifCollape = this.ifCollape(this.pos);
-        if(ifCollape){
+        if (ifCollape) {
             this.current = oldCurrent;
-        }else{
-            for(let i=1; i<=n/2; i++){
-                for(let j=i; j<n-i+1; j++){
+        } else {
+            for (let i = 1; i <= n / 2; i++) {
+                for (let j = i; j < n - i + 1; j++) {
                     let t = this.currentpieces[i - 1][j - 1];
                     this.currentpieces[i - 1][j - 1] = this.currentpieces[n - j][i - 1];
                     this.currentpieces[n - j][i - 1] = this.currentpieces[n - i][n - j];
@@ -270,7 +279,7 @@ export default class NewClass extends cc.Component {
         const newPos = new cc.Vec2(this.pos.x - 1, this.pos.y);
         // 判断是否到底
         const ifCollape = this.ifCollape(newPos);
-        if(!ifCollape){
+        if (!ifCollape) {
             this.pos = newPos;
             this.movePieces(this.pos);
         }
@@ -281,39 +290,39 @@ export default class NewClass extends cc.Component {
         const newPos = new cc.Vec2(this.pos.x + 1, this.pos.y);
         // 判断是否到底
         const ifCollape = this.ifCollape(newPos);
-        if(!ifCollape){
+        if (!ifCollape) {
             this.pos = newPos;
             this.movePieces(this.pos);
         }
     }
 
 
-    onMove(){
+    onMove() {
         // 更新位置
         const newPos = new cc.Vec2(this.pos.x, this.pos.y - 1);
         // 判断是否到底
         const ifCollape = this.ifCollape(newPos);
-        if(ifCollape){
+        if (ifCollape) {
             this.endRound(this.pos);
-        }else{
+        } else {
             this.pos = newPos;
             this.movePieces(this.pos);
-            this.scheduleOnce(()=>{this.onMove()},this.speed * 2);
+            this.scheduleOnce(() => { this.onMove() }, this.speed * 2);
         }
     }
 
-    endRound(pos:cc.Vec2){
+    endRound(pos: cc.Vec2) {
         cc.Tween.stopAll();
         this.unscheduleAllCallbacks();
-        for(let i = 0; i < this.currentpieces.length; i++){
-            for(let j = 0; j < this.currentpieces[0].length; j++){
-                if(this.currentpieces[i][j] != null){
+        for (let i = 0; i < this.currentpieces.length; i++) {
+            for (let j = 0; j < this.currentpieces[0].length; j++) {
+                if (this.currentpieces[i][j] != null) {
                     const newx = pos.x + j;
                     const newy = pos.y - i;
                     this.mapPieces[newy][newx] = this.currentpieces[i][j];
                     this.map[newy][newx] = this.current[i][j];
                     this.mapPieces[newy][newx].x = j * 8 - 36 + pos.x * 8,
-                    this.mapPieces[newy][newx].y = - i * 8 + 96 - (this.mapheight - pos.y) * 8
+                        this.mapPieces[newy][newx].y = - i * 8 + 96 - (this.mapheight - pos.y) * 8
                 }
             }
         }
@@ -325,12 +334,12 @@ export default class NewClass extends cc.Component {
         // }
     }
 
-    nextRound(){
+    nextRound() {
         // 将现在的 block 加入地图
         this.current = [];
-        for(let i = 0; i < this.next.length; i++){
+        for (let i = 0; i < this.next.length; i++) {
             const line = [];
-            for(let j = 0; j < this.next[0].length; j++){
+            for (let j = 0; j < this.next[0].length; j++) {
                 var value = this.next[i][j];
                 line.push(value);
             }
@@ -338,33 +347,58 @@ export default class NewClass extends cc.Component {
         }
         this.next = this.generateABlock();
         this.refreshNext(this.next);
-        this.pos = new cc.Vec2(4,this.mapheight - 1);
-        this.addNewBlock(this.current,this.pos);
+        this.pos = new cc.Vec2(4, this.mapheight - 1);
+        this.addNewBlock(this.current, this.pos);
         const ifCollape = this.ifCollape(this.pos);
-        if(ifCollape){
-            // 游戏结束
+        if (ifCollape) {
+            // 游戏结束 - 保存历史最高分
+            this.saveHighScore();
             this.unregisteButtons();
             this.endBtn.node.active = true;
-        }else{
-            this.scheduleOnce(()=>{this.onMove()},this.speed * 2);
+        } else {
+            this.scheduleOnce(() => { this.onMove() }, this.speed * 2);
             this.registeButtons();
         }
     }
 
-    Eliminated(){
+    // 保存历史最高分
+    saveHighScore() {
+        // 检查是否在微信小游戏环境
+        if (typeof wx !== 'undefined') {
+            // 使用微信小游戏API进行本地存储
+            const currentHighScore = wx.getStorageSync("highScore") || 0;
+            if (this.score > currentHighScore) {
+                // 本地存储
+                wx.setStorageSync("highScore", this.score);
+
+                // 上报分数到开放数据域（用于好友排行榜）
+                this.reportUserScore(this.score, () => {
+                    console.log("分数上报完成，可以显示排行榜");
+                });
+            }
+        } else {
+            // 非微信环境，使用浏览器localStorage
+            const currentHighScore = cc.sys.localStorage.getItem("highScore") || "0";
+            if (this.score > parseInt(currentHighScore)) {
+                cc.sys.localStorage.setItem("highScore", this.score.toString());
+            }
+        }
+    }
+
+    Eliminated() {
         let eliSets = [];
         const flagForRow = [];
         const flagForCol = [];
         const flagForDiaR = [];
         const flagForDiaL = [];
         const flagForEliminated = [];
-        for(let i = 0; i < this.mapheight; i++){
+        for (let i = 0; i < this.mapheight; i++) {
             const lineForRow = [];
             const lineForCol = [];
             const lineForDiaR = [];
             const lineForDiaL = [];
             const lineForEliminated = [];
-            for(let j = 0; j < this.mapwidth; j++){
+            for (let j = 0; j < this.mapwidth; j++) {
                 lineForRow.push(false);
                 lineForCol.push(false);
                 lineForDiaR.push(false);
@@ -377,63 +411,63 @@ export default class NewClass extends cc.Component {
             flagForDiaL.push(lineForDiaL);
             flagForEliminated.push(lineForEliminated);
         }
-        for(let i = 0; i < this.mapheight; i++){
-            for(let j = 0; j < this.mapwidth; j++){
+        for (let i = 0; i < this.mapheight; i++) {
+            for (let j = 0; j < this.mapwidth; j++) {
                 const value = this.map[i][j];
-                if(value != 0){
+                if (value != 0) {
                     // 判断横向有无浏览过
-                    if(flagForRow[i][j] == false){
+                    if (flagForRow[i][j] == false) {
                         const set = [];
-                        for(let k = j; k < this.mapwidth; k++){
-                            if(this.map[i][k] != value){
+                        for (let k = j; k < this.mapwidth; k++) {
+                            if (this.map[i][k] != value) {
                                 break;
                             }
                             flagForRow[i][k] = true;
-                            set.push(new cc.Vec2(k,i));
+                            set.push(new cc.Vec2(k, i));
                         }
-                        if(set.length >= 5){
+                        if (set.length >= 5) {
                             eliSets.push(set);
                         }
                     }
                     // 判断纵向有无浏览过
-                    if(flagForCol[i][j] == false){
+                    if (flagForCol[i][j] == false) {
                         const set = [];
-                        for(let k = i; k < this.mapheight; k++){
-                            if(this.map[k][j] != value){
+                        for (let k = i; k < this.mapheight; k++) {
+                            if (this.map[k][j] != value) {
                                 break;
                             }
                             flagForCol[k][j] = true;
-                            set.push(new cc.Vec2(j,k));
+                            set.push(new cc.Vec2(j, k));
                         }
-                        if(set.length >= 5){
+                        if (set.length >= 5) {
                             eliSets.push(set);
                         }
                     }
                     // 判断斜向右有无浏览过
-                    if(flagForDiaR[i][j] == false){
+                    if (flagForDiaR[i][j] == false) {
                         const set = [];
-                        for(let k = i,l = j; k < this.mapheight && l < this.mapwidth; k++,l++){
-                            if(this.map[k][l] != value){
+                        for (let k = i, l = j; k < this.mapheight && l < this.mapwidth; k++, l++) {
+                            if (this.map[k][l] != value) {
                                 break;
                             }
                             flagForDiaR[k][l] = true;
-                            set.push(new cc.Vec2(l,k));
+                            set.push(new cc.Vec2(l, k));
                         }
-                        if(set.length >= 5){
+                        if (set.length >= 5) {
                             eliSets.push(set);
                         }
                     }
                     // 判断斜向左有无浏览过
-                    if(flagForDiaL[i][j] == false){
+                    if (flagForDiaL[i][j] == false) {
                         const set = [];
-                        for(let k = i,l = j; k < this.mapheight && l >= 0; k++,l--){
-                            if(this.map[k][l] != value){
+                        for (let k = i, l = j; k < this.mapheight && l >= 0; k++, l--) {
+                            if (this.map[k][l] != value) {
                                 break;
                             }
                             flagForDiaL[k][l] = true;
-                            set.push(new cc.Vec2(l,k));
+                            set.push(new cc.Vec2(l, k));
                         }
-                        if(set.length >= 5){
+                        if (set.length >= 5) {
                             eliSets.push(set);
                         }
                     }
@@ -443,100 +477,100 @@ export default class NewClass extends cc.Component {
         // 增加分数
         this.times += eliSets.length;
         let pieceNum = 0;
-        if(eliSets.length == 0){
+        if (eliSets.length == 0) {
             this.nextRound();
             return false;
         }
         // 把 sets 中的点从 map 中移除
-        for(let i = 0; i < eliSets.length; i++){
+        for (let i = 0; i < eliSets.length; i++) {
             const set = eliSets[i];
-            for(let j = 0; j < set.length; j++){
-                if(flagForEliminated[set[j].y][set[j].x] == false){
+            for (let j = 0; j < set.length; j++) {
+                if (flagForEliminated[set[j].y][set[j].x] == false) {
                     pieceNum++;
                 }
                 flagForEliminated[set[j].y][set[j].x] = true;
             }
         }
-        if(this.times == 1){
+        if (this.times == 1) {
             this.comboLabel.string = "    + " + pieceNum;
-        }else{
+        } else {
             this.comboLabel.string = "    + " + this.times + " * " + pieceNum + "\nCombo * " + this.times;
         }
-        
+
         this.unregisteButtons();
         // 棋子闪烁两下
-        this.scheduleOnce(()=>{
+        this.scheduleOnce(() => {
             cc.audioEngine.playEffect(this.eliminateClip, false);
-            for(let i = 0; i < eliSets.length; i++){
+            for (let i = 0; i < eliSets.length; i++) {
                 const set = eliSets[i];
-                for(let j = 0; j < set.length; j++){
+                for (let j = 0; j < set.length; j++) {
                     this.mapPieces[set[j].y][set[j].x].active = false;
                     this.comboLabel.node.active = false;
                 }
             }
-            this.scheduleOnce(()=>{
-                for(let i = 0; i < eliSets.length; i++){
+            this.scheduleOnce(() => {
+                for (let i = 0; i < eliSets.length; i++) {
                     const set = eliSets[i];
-                    for(let j = 0; j < set.length; j++){
+                    for (let j = 0; j < set.length; j++) {
                         this.mapPieces[set[j].y][set[j].x].active = true;
                         this.comboLabel.node.active = true;
                     }
                 }
-                this.scheduleOnce(()=>{
-                    for(let i = 0; i < eliSets.length; i++){
+                this.scheduleOnce(() => {
+                    for (let i = 0; i < eliSets.length; i++) {
                         const set = eliSets[i];
-                        for(let j = 0; j < set.length; j++){
+                        for (let j = 0; j < set.length; j++) {
                             this.mapPieces[set[j].y][set[j].x].active = false;
                             this.comboLabel.node.active = false;
                         }
                     }
-                    this.scheduleOnce(()=>{
-                        for(let i = 0; i < eliSets.length; i++){
+                    this.scheduleOnce(() => {
+                        for (let i = 0; i < eliSets.length; i++) {
                             const set = eliSets[i];
-                            for(let j = 0; j < set.length; j++){
+                            for (let j = 0; j < set.length; j++) {
                                 this.mapPieces[set[j].y][set[j].x].active = true;
                                 this.comboLabel.node.active = true;
                             }
                         }
-                        this.scheduleOnce(()=>{
-                            for(let i = 0; i < eliSets.length; i++){
+                        this.scheduleOnce(() => {
+                            for (let i = 0; i < eliSets.length; i++) {
                                 const set = eliSets[i];
-                                for(let j = 0; j < set.length; j++){
+                                for (let j = 0; j < set.length; j++) {
                                     this.mapPieces[set[j].y][set[j].x].getComponent(cc.Sprite).spriteFrame = this.exs[0];
                                 }
                             }
-                            this.scheduleOnce(()=>{
-                                for(let i = 0; i < eliSets.length; i++){
+                            this.scheduleOnce(() => {
+                                for (let i = 0; i < eliSets.length; i++) {
                                     const set = eliSets[i];
-                                    for(let j = 0; j < set.length; j++){
+                                    for (let j = 0; j < set.length; j++) {
                                         this.mapPieces[set[j].y][set[j].x].getComponent(cc.Sprite).spriteFrame = this.exs[1];
                                     }
                                 }
-                                this.scheduleOnce(()=>{
-                                    for(let i = 0; i < eliSets.length; i++){
+                                this.scheduleOnce(() => {
+                                    for (let i = 0; i < eliSets.length; i++) {
                                         const set = eliSets[i];
-                                        for(let j = 0; j < set.length; j++){
+                                        for (let j = 0; j < set.length; j++) {
                                             this.mapPieces[set[j].y][set[j].x].getComponent(cc.Sprite).spriteFrame = this.exs[2];
                                         }
                                     }
-                                    this.scheduleOnce(()=>{
-                                        for(let i = 0; i < eliSets.length; i++){
+                                    this.scheduleOnce(() => {
+                                        for (let i = 0; i < eliSets.length; i++) {
                                             const set = eliSets[i];
-                                            for(let j = 0; j < set.length; j++){
+                                            for (let j = 0; j < set.length; j++) {
                                                 this.mapPieces[set[j].y][set[j].x].getComponent(cc.Sprite).spriteFrame = this.exs[3];
                                             }
                                         }
-                                        this.scheduleOnce(()=>{
-                                            for(let i = 0; i < eliSets.length; i++){
+                                        this.scheduleOnce(() => {
+                                            for (let i = 0; i < eliSets.length; i++) {
                                                 const set = eliSets[i];
-                                                for(let j = 0; j < set.length; j++){
+                                                for (let j = 0; j < set.length; j++) {
                                                     this.mapPieces[set[j].y][set[j].x].getComponent(cc.Sprite).spriteFrame = this.exs[4];
                                                 }
                                             }
-                                            this.scheduleOnce(()=>{
-                                                for(let i = 0; i < eliSets.length; i++){
+                                            this.scheduleOnce(() => {
+                                                for (let i = 0; i < eliSets.length; i++) {
                                                     const set = eliSets[i];
-                                                    for(let j = 0; j < set.length; j++){
+                                                    for (let j = 0; j < set.length; j++) {
                                                         this.map[set[j].y][set[j].x] = 0;
                                                         this.boardSprite.node.removeChild(this.mapPieces[set[j].y][set[j].x]);
                                                         this.mapPieces[set[j].y][set[j].x] = null;
@@ -547,34 +581,34 @@ export default class NewClass extends cc.Component {
                                                 this.scoreLabel.string = "分数: " + this.score;
                                                 // this.nextRound();
                                                 this.hangPiecesFall();
-                                            },0.05);
-                                        },0.05);
-                                    },0.05);
-                                },0.05);
-                            },0.05);
-                        },0.05);
-                    },0.2);
-                },0.2);
-            },0.2);
-        },0.2);
+                                            }, 0.05);
+                                        }, 0.05);
+                                    }, 0.05);
+                                }, 0.05);
+                            }, 0.05);
+                        }, 0.05);
+                    }, 0.2);
+                }, 0.2);
+            }, 0.2);
+        }, 0.2);
         return true;
     }
 
-    hangPiecesFall(){
+    hangPiecesFall() {
         // 判断是否有碎片
         const hangFlags = []
         const nothanglist = [];
-        for(let i = 0; i < this.mapheight; i++){
+        for (let i = 0; i < this.mapheight; i++) {
             const line = [];
-            for(let j = 0; j < this.mapwidth; j++){
-                if(this.map[i][j] == 0){
+            for (let j = 0; j < this.mapwidth; j++) {
+                if (this.map[i][j] == 0) {
                     line.push(0);
-                }else{
+                } else {
                     // 将最后一行存在的棋子标注为2
-                    if(i == 0){
+                    if (i == 0) {
                         line.push(2);
-                        nothanglist.push(new cc.Vec2(j,i));
-                    }else{
+                        nothanglist.push(new cc.Vec2(j, i));
+                    } else {
                         line.push(1);
                     }
                 }
@@ -583,14 +617,14 @@ export default class NewClass extends cc.Component {
         }
         // 利用广度优先搜索，所有与标记为2联通的棋子位置全部标记为2
         let visitedindex = 0;
-        const delx = [0,0,-1,1];
-        const dely = [1,-1,0,0];
-        while(visitedindex < nothanglist.length){
+        const delx = [0, 0, -1, 1];
+        const dely = [1, -1, 0, 0];
+        while (visitedindex < nothanglist.length) {
             let P = nothanglist[visitedindex];
             visitedindex++;
-            for(let i = 0; i < 4; i++){
-                const newP = new cc.Vec2(P.x + delx[i],P.y + dely[i]);
-                if(newP.x >= 0 && newP.y >= 0 && newP.x < this.mapwidth && newP.y < this.mapheight && hangFlags[newP.y][newP.x] == 1){
+            for (let i = 0; i < 4; i++) {
+                const newP = new cc.Vec2(P.x + delx[i], P.y + dely[i]);
+                if (newP.x >= 0 && newP.y >= 0 && newP.x < this.mapwidth && newP.y < this.mapheight && hangFlags[newP.y][newP.x] == 1) {
                     hangFlags[newP.y][newP.x] = 2;
                     nothanglist.push(newP);
                 }
@@ -599,15 +633,15 @@ export default class NewClass extends cc.Component {
         // 将剩下的连通分量从3开始编号
         let adjIndex = 2;
         const breakenBlocks = [];
-        while(true){
+        while (true) {
             const block = [];
             let ifHasHangingPieces = false;
             let visitedlist = [];
             visitedindex = 0;
             // 遍历所有的棋子
-            for(let i = 0; i < this.mapheight; i++){
-                for(let j = 0; j < this.mapwidth; j++){
-                    if(hangFlags[i][j] == 1){
+            for (let i = 0; i < this.mapheight; i++) {
+                for (let j = 0; j < this.mapwidth; j++) {
+                    if (hangFlags[i][j] == 1) {
                         adjIndex++;
                         hangFlags[i][j] = adjIndex;
                         block.push(new cc.Vec2(j, i));
@@ -616,19 +650,19 @@ export default class NewClass extends cc.Component {
                         break;
                     }
                 }
-                if(ifHasHangingPieces){
+                if (ifHasHangingPieces) {
                     break;
                 }
             }
-            if(ifHasHangingPieces == false){
+            if (ifHasHangingPieces == false) {
                 break;
             }
-            while(visitedindex < visitedlist.length){
+            while (visitedindex < visitedlist.length) {
                 let P = visitedlist[visitedindex];
                 visitedindex++;
-                for(let i = 0; i < 4; i++){
-                    const newP = new cc.Vec2(P.x + delx[i],P.y + dely[i]);
-                    if(newP.x >= 0 && newP.y >= 0 && newP.x < this.mapwidth && newP.y < this.mapheight && hangFlags[newP.y][newP.x] == 1){
+                for (let i = 0; i < 4; i++) {
+                    const newP = new cc.Vec2(P.x + delx[i], P.y + dely[i]);
+                    if (newP.x >= 0 && newP.y >= 0 && newP.x < this.mapwidth && newP.y < this.mapheight && hangFlags[newP.y][newP.x] == 1) {
                         hangFlags[newP.y][newP.x] = adjIndex;
                         visitedlist.push(newP);
                         block.push(newP);
@@ -640,24 +674,24 @@ export default class NewClass extends cc.Component {
         this.continueFall(breakenBlocks, hangFlags);
     }
 
-    continueFall(breakenBlocks, hangFlags){
+    continueFall(breakenBlocks, hangFlags) {
         let ifAnyFall = false;
-        for(let i = 0; i < breakenBlocks.length; i++){
+        for (let i = 0; i < breakenBlocks.length; i++) {
             const block = breakenBlocks[i];
             const adjIndex = i + 3;
             let ifCanfall = true;
-            for(let j = 0; j < block.length; j++){
+            for (let j = 0; j < block.length; j++) {
                 const pos = block[j];
-                if(pos.y == 0 || (hangFlags[pos.y - 1][pos.x] != adjIndex && hangFlags[pos.y - 1][pos.x] != 0)){
+                if (pos.y == 0 || (hangFlags[pos.y - 1][pos.x] != adjIndex && hangFlags[pos.y - 1][pos.x] != 0)) {
                     ifCanfall = false;
                     break;
                 }
             }
-            if(ifCanfall){
+            if (ifCanfall) {
                 ifAnyFall = true;
                 const newMap = [];
                 const newPieces = [];
-                for(let j = 0; j < block.length; j++){
+                for (let j = 0; j < block.length; j++) {
                     const pos = block[j];
                     newMap.push(this.map[pos.y][pos.x]);
                     this.map[pos.y][pos.x] = 0;
@@ -666,34 +700,34 @@ export default class NewClass extends cc.Component {
                     this.mapPieces[pos.y][pos.x] = null;
                     block[j].y -= 1;
                 }
-                for(let j = 0; j < block.length; j++){
+                for (let j = 0; j < block.length; j++) {
                     const pos = block[j];
                     this.map[pos.y][pos.x] = newMap[j];
                     hangFlags[pos.y][pos.x] = adjIndex;
                     this.mapPieces[pos.y][pos.x] = newPieces[j];
                     const node = this.mapPieces[pos.y][pos.x];
-                    cc.tween(node).to(0.2,{
+                    cc.tween(node).to(0.2, {
                         x: pos.x * 8 - 36,
                         y: pos.y * 8 - 88
                     })
-                    .start();
+                        .start();
                 }
             }
         }
-        if(ifAnyFall){
-            this.scheduleOnce(()=>{this.continueFall(breakenBlocks, hangFlags);},0.4);
-        }else{
+        if (ifAnyFall) {
+            this.scheduleOnce(() => { this.continueFall(breakenBlocks, hangFlags); }, 0.4);
+        } else {
             this.Eliminated();
         }
     }
 
-    movePieces(pos:cc.Vec2){
+    movePieces(pos: cc.Vec2) {
         cc.Tween.stopAll();
-        for(let i = 0; i < this.currentpieces.length; i++){
-            for(let j = 0; j < this.currentpieces[0].length; j++){
-                if(this.currentpieces[i][j] != null){
+        for (let i = 0; i < this.currentpieces.length; i++) {
+            for (let j = 0; j < this.currentpieces[0].length; j++) {
+                if (this.currentpieces[i][j] != null) {
                     const node = this.currentpieces[i][j];
-                    cc.tween(node).to(this.speed,{
+                    cc.tween(node).to(this.speed, {
                         x: j * 8 - 36 + pos.x * 8,
                         y: - i * 8 + 96 - (this.mapheight - pos.y) * 8
                     }).start();
@@ -702,20 +736,20 @@ export default class NewClass extends cc.Component {
         }
     }
 
-    ifCollape(pos:cc.Vec2){
+    ifCollape(pos: cc.Vec2) {
         const current = this.current;
-        for(let i = 0; i < current.length; i++){
-            for(let j = 0; j < current[0].length; j++){
-                if(current[i][j] != 0){
+        for (let i = 0; i < current.length; i++) {
+            for (let j = 0; j < current[0].length; j++) {
+                if (current[i][j] != 0) {
                     const newx = pos.x + j;
                     const newy = pos.y - i;
                     // console.log(newx, newy);
-                    if(newx < 0 || newx >= this.mapwidth || newy < 0 || newy > this.mapheight){
+                    if (newx < 0 || newx >= this.mapwidth || newy < 0 || newy > this.mapheight) {
                         // 播放落棋子的声音
                         cc.audioEngine.playEffect(this.collapeClip, false);
                         return true;
                     }
-                    if(this.map[newy][newx]!=0){
+                    if (this.map[newy][newx] != 0) {
                         // 播放落棋子的声音
                         cc.audioEngine.playEffect(this.collapeClip, false);
                         return true;
@@ -726,19 +760,19 @@ export default class NewClass extends cc.Component {
         return false;
     }
 
-    generateABlock(){
+    generateABlock() {
         let res = [];
         const mod = this.blocks[Math.floor(Math.random() * this.blocks.length)];
-        for(let i = 0; i < mod.length; i++){
+        for (let i = 0; i < mod.length; i++) {
             const line = [];
-            for(let j = 0; j < mod[0].length; j++){
-                if(mod[i][j] == 0){
+            for (let j = 0; j < mod[0].length; j++) {
+                if (mod[i][j] == 0) {
                     line.push(0);
-                }else{
+                } else {
                     let type = Math.floor(Math.random() * 2);
-                    if(type == 0){
+                    if (type == 0) {
                         line.push(1);
-                    }else{
+                    } else {
                         line.push(2);
                     }
                 }
@@ -748,20 +782,20 @@ export default class NewClass extends cc.Component {
         return res;
     }
 
-    refreshNext(block:[[]]){
+    refreshNext(block: [[]]) {
         this.blockIndex++;
         this.levelnum = 1 + Math.floor(this.blockIndex / 20);
         this.levelLabel.string = "关卡 " + this.levelnum;
-        this.speed = 0.5 * Math.pow(0.9,(this.levelnum - 1));
+        this.speed = 0.5 * Math.pow(0.9, (this.levelnum - 1));
         this.nextSprite.node.removeAllChildren();
-        for(let i = 0; i < block.length; i++){
-            for(let j = 0; j < block[0].length; j++){
+        for (let i = 0; i < block.length; i++) {
+            for (let j = 0; j < block[0].length; j++) {
                 var piece;
-                if(block[i][j] == 1){
+                if (block[i][j] == 1) {
                     piece = cc.instantiate(this.whitePrefab);
-                }else if(block[i][j] == 2){
+                } else if (block[i][j] == 2) {
                     piece = cc.instantiate(this.blackPrefab);
-                }else{
+                } else {
                     continue;
                 }
                 piece.x = j * 8 - 8;
@@ -771,17 +805,17 @@ export default class NewClass extends cc.Component {
         }
     }
 
-    addNewBlock(block:[[]],pos:cc.Vec2){
+    addNewBlock(block: [[]], pos: cc.Vec2) {
         this.currentpieces = [];
-        for(let i = 0; i < block.length; i++){
+        for (let i = 0; i < block.length; i++) {
             const line = [];
-            for(let j = 0; j < block[0].length; j++){
+            for (let j = 0; j < block[0].length; j++) {
                 var piece;
-                if(block[i][j] == 1){
+                if (block[i][j] == 1) {
                     piece = cc.instantiate(this.whitePrefab);
-                }else if(block[i][j] == 2){
+                } else if (block[i][j] == 2) {
                     piece = cc.instantiate(this.blackPrefab);
-                }else{
+                } else {
                     line.push(null);
                     continue;
                 }
@@ -793,5 +827,64 @@ export default class NewClass extends cc.Component {
             this.currentpieces.push(line);
         }
     }
+
+    // 初始化微信开放数据域
+    initOpenContext() {
+        if (typeof wx !== 'undefined') {
+            // 获取开放数据域
+            this._openContext = wx.getOpenDataContext();
+        }
+    }
+
+    // 上报用户分数到微信开放数据域
+    reportUserScore(score: number, listener?: Function, target?: any) {
+        if (typeof wx === 'undefined') {
+            return;
+        }
+
+        wx.setUserCloudStorage({
+            KVDataList: [
+                { key: 'score', value: `${score}` },
+                { key: 'level', value: `${this.levelnum}` }
+            ],
+            success: () => {
+                console.log('上报分数成功:', score);
+                listener?.apply(target);
+                // 通知子域更新排行榜
+                if (this._openContext) {
+                    this._openContext.postMessage({
+                        type: 'engine',
+                        event: 'updateRank',
+                        score: score,
+                        level: this.levelnum
+                    });
+                }
+            },
+            fail: (err: any) => {
+                console.log('上报分数失败:', err);
+            }
+        });
+    }
+
+    // 显示排行榜
+    showRankList() {
+        if (this._openContext) {
+            this._openContext.postMessage({
+                type: 'engine',
+                event: 'showRank'
+            });
+        }
+    }
+
+    // 隐藏排行榜
+    hideRankList() {
+        if (this._openContext) {
+            this._openContext.postMessage({
+                type: 'engine',
+                event: 'hideRank'
+            });
+        }
+    }
+
     // update (dt) {}
 }
