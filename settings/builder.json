@@ -1,5 +1,5 @@
 {
-  "title": "TetrisFive",
+  "title": "wechatg",
   "packageName": "org.cocos2d.demo",
   "startScene": "32f4c17e-f393-420b-b651-1744765d29e0",
   "excludeScenes": [],
@@ -15,7 +15,7 @@
   "mainCompressionType": "default",
   "mainIsRemote": false,
   "optimizeHotUpdate": false,
-  "md5Cache": true,
+  "md5Cache": false,
   "nativeMd5Cache": true,
   "encryptJs": true,
   "xxteaKey": "8a5f38b9-49d8-40",

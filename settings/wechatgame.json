@@ -3,6 +3,6 @@
   "orientation": "landscape",
   "separate_engine": false,
   "REMOTE_SERVER_ROOT": "",
-  "subContext": "",
+  "subContext": "wx-sub-project",
   "startSceneAssetBundle": false
 }
